@@ -101,20 +101,59 @@ body {
     font-size: 19px; color: var(--text-muted); font-weight: 600; line-height: 1.8; margin-bottom: 35px; max-width: 95%;
 }
 
+
+/* التأثير الإبداعي والحركة العائمة لصورة المستر */
 .hero-image-wrapper {
-    flex: 1; min-width: 300px; display: flex; justify-content: center; position: relative;
-    animation: fadeInUp 1.2s ease-out forwards;
+    flex: 1; 
+    min-width: 300px; 
+    display: flex; 
+    justify-content: center; 
+    position: relative;
+    animation: floatingImage 4s ease-in-out infinite alternate; /* حركة الصعود والهبوط */
 }
 
+/* توهج ديناميكي خلف الصورة */
 .hero-image-bg {
-    position: absolute; width: 450px; height: 450px; 
-    background: radial-gradient(circle, rgba(152, 0, 0, 0.15) 0%, transparent 60%);
-    z-index: 1; border-radius: 50%;
+    position: absolute; 
+    width: 450px; 
+    height: 450px; 
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.3) 0%, rgba(10, 0, 152, 0.1) 50%, transparent 70%); /* دمج الذهبي مع العنابي */
+    z-index: 1; 
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(25px);
+    animation: pulseGlow 3s infinite alternate ease-in-out; /* حركة النبض للإضاءة */
 }
 
+/* تصميم الصورة الفعلي (إطار زجاجي وظل فخم) */
 .hero-image-wrapper img {
-    width: 100%; max-width: 420px; z-index: 2; border-radius: 30px; 
-    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.2));
+    width: 100%; 
+    max-width: 420px; 
+    z-index: 2; 
+    border-radius: 35px; 
+    border: 4px solid rgba(255, 255, 255, 0.6); /* إطار أبيض نصف شفاف */
+    box-shadow: 0 30px 60px rgba(10, 0, 152, 0.25), /* ظل سفلي عنابي */
+                inset 0 0 20px rgba(255, 255, 255, 0.5); /* لمعة داخلية */
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.hero-image-wrapper img:hover {
+    transform: scale(1.03); /* تكبير بسيط عند وقوف الماوس */
+}
+
+/* الانيميشن الخاص بالصورة */
+@keyframes floatingImage { 
+    0% { transform: translateY(0px); } 
+    100% { transform: translateY(-20px); } 
+}
+
+/* الانيميشن الخاص بالتوهج الخلفي */
+@keyframes pulseGlow {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
 
 /* الكلمات الطايرة (Glassmorphism) */
@@ -283,33 +322,32 @@ body {
 }
 .close-auth:hover { background: var(--danger); color: white; transform: rotate(90deg); }
 
+/* 📱 تظبيط الموبايل (حركة تنفس مستمرة بديلة للماوس) */
 @media (max-width: 768px) {
-    .auth-brand-side { display: none; }
-    .auth-container { flex-direction: column; border-radius: 24px; min-height: auto; width: 95%; }
-    .auth-form-side { padding: 40px 25px; }
+    .teacher-premium-watermark {
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.1; /* وضوح مبدئي خفيف */
+        height: 100%;
+        /* تشغيل أنيميشن التنفس باستمرار ذهاباً وإياباً */
+        animation: breathingWatermark 4s ease-in-out infinite alternate;
+    }
 
-
-    /* 📱 تظبيط الكلمات الطايرة عشان متغطيش على وش المستر في الموبايل */
-    .hero-image-wrapper img { 
-        max-width: 85%; /* تصغير الصورة سنة عشان ندي مساحة للكلمات على الأطراف */
-    } 
-    .float-icon { 
-        padding: 8px 15px; 
-        font-size: 13px !important; /* تصغير الخط */
-        border-radius: 12px; 
+    /* الأنيميشن الخاص بالموبايل (نبض وتكبير خفيف جداً) */
+    @keyframes breathingWatermark {
+        0% { 
+            transform: translateX(-50%) scale(1); 
+            opacity: 0.08; 
+        }
+        100% { 
+            transform: translateX(-50%) scale(1.04); 
+            opacity: 0.18; /* الصورة بتنور شوية وترجع تطفي بهدوء */
+        }
     }
-    .float-1 { 
-        top: 0%; 
-        right: 0%; /* زقيناها لفوق يمين */
-    }
-    .float-2 { 
-        bottom: 5%; 
-        left: 0%; /* زقيناها لتحت شمال */
-        font-size: 14px !important; 
-    }
-    .float-3 { 
-        top: 45%; 
-        left: -5%; /* زقيناها في النص على الشمال بره شوية */
+    
+    /* إلغاء تأثير الهوفر بتاع الكمبيوتر عشان ميعملش تداخل في الفون */
+    .premium-student-card:hover .teacher-premium-watermark {
+        transform: none; /* بنعتمد على الأنيميشن بس */
     }
 }
 /* تنسيقات المنصة من الداخل */
@@ -379,6 +417,54 @@ body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes floatWatermark { 0%, 100% { top: 10%; left: 10%; } 25% { top: 80%; left: 20%; } 50% { top: 50%; left: 80%; } 75% { top: 20%; left: 60%; } }
 .no-select { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
+
+
+
+/* ========================================== */
+/* 🎭 ستايل صورة المستر المدمجة في كارت الطالب */
+/* ========================================== */
+.teacher-premium-watermark {
+    position: absolute;
+    bottom: -5%; /* تنزل تحت الكارت سنة عشان تبان طبيعية */
+    left: 28%; /* مكانها في الفراغ المثالي بين البيانات والباركود */
+    height: 120%; /* تكبير الصورة عشان تملى الفراغ بشياكة */
+    z-index: 1; /* ورا النصوص والباركود عشان متداريش عليهم */
+    opacity: 0.12; /* شفافة جداً عشان متكونش خانقة للعين */
+    pointer-events: none; /* عشان متبوظش أي كليك جوه الكارت */
+    
+    /* السحر: تدرج يخلي الصورة تتلاشى من تحت لفوق وتندمج مع الكارت */
+    -webkit-mask-image: linear-gradient(to top, transparent 2%, black 40%);
+    mask-image: linear-gradient(to top, transparent 2%, black 40%);
+    
+    transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.teacher-premium-watermark img {
+    height: 100%;
+    width: auto;
+    /* فلتر يخلي الصورة تاخد من روح ألوان الكارت وتوهج خفيف */
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)) contrast(1.1); 
+}
+
+/* تأثير فخم لما الماوس ييجي على الكارت (الصورة تنور وتتحرك حركة خفيفة) */
+.premium-student-card:hover .teacher-premium-watermark {
+    opacity: 0.28; /* توضح شوية */
+    transform: scale(1.03) translateX(-15px); /* تكبير بسيط وحركة لليسار */
+}
+
+/* 📱 تظبيط الموبايل عشان متداريش على الباركود */
+@media (max-width: 768px) {
+    .teacher-premium-watermark {
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.08; /* نقلل الشفافية أكتر في الموبايل عشان الشاشة صغيرة */
+        height: 100%;
+    }
+    .premium-student-card:hover .teacher-premium-watermark {
+        transform: translateX(-50%) scale(1.02);
+        opacity: 0.12;
+    }
+}
 </style>
 </head>
 <body>
@@ -408,7 +494,7 @@ body {
                 <!-- بادج فخم بالذهبي والأحمر -->
                 <div style="display: inline-block; background: rgba(245, 158, 11, 0.1); border-right: 5px solid var(--accent); padding: 10px 25px; margin-bottom: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.1);">
                     <h2 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px; color: var(--accent); text-transform: uppercase;">
-                        👑 صاحب سلسلة الـسعداوي
+                        👑 صاحب سلسلة الفيزيائى
                     </h2>
                 </div>
 
@@ -683,10 +769,18 @@ body {
             <main class="content-area">
                 
                 <!-- 🏠 الرئيسية -->
-                <div id="tab-home" class="tab-content active">
-                    <!-- كارت الطالب الـ VIP الداخلي -->
-                    <div class="premium-student-card">
-                        <div class="student-info-col">
+<div id="tab-home" class="tab-content active">
+    <!-- كارت الطالب الـ VIP الداخلي -->
+    <div class="premium-student-card">
+        
+        <!-- 🎭 صورة المستر كعلامة مائية فخمة (الجديد) -->
+        <div class="teacher-premium-watermark">
+            <!-- تأكد إن مسار الصورة "mr.png" هو نفس مسار صورتك المفرغة -->
+            <img src="mr.png" alt="مستر أحمد سعد">
+        </div>
+
+        <div class="student-info-col">
+            <!-- باقي أكواد بيانات الطالب زي ما هي ... -->
                             <span style="background:rgba(255, 255, 255, 0.15); padding:6px 15px; border-radius:30px; font-size:12px; font-weight:bold; color:#f8fafc; border: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px; display: inline-block;">● متصل الآن بالمنصة</span>
                             
                             <h2 id="card-student-name" style="margin:0 0 15px 0; font-size:28px; color: white; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.3);">اسم الطالب</h2>
