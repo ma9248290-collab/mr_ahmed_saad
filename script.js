@@ -5205,49 +5205,16 @@ window.loadPlatformForumQuestions = async function() {
         let data = await res.json() || {};
         tbody.innerHTML = "";
         let keys = Object.keys(data).reverse();
-        
-        let pendingQuestionsCount = 0; // 💡 عشان نعد الأسئلة اللي لسه متردش عليها
-
         if(keys.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">لا توجد أسئلة معلقة حالياً 🎉</td></tr>`;
-            document.getElementById("forum-alert-icon").style.display = "none"; // إخفاء الصورة
             return;
         }
-
         keys.forEach(id => {
             let q = data[id];
-            
-            // لو مفيش رد، نزود العداد
-            if (!q.replyText) pendingQuestionsCount++;
-
             let ansBtn = `<button class="save-btn" style="background:#3b82f6; width:auto; padding:5px 12px; margin:0;" onclick="answerForumQuestion('${id}')">💬 الرد</button>`;
-            let replyHtml = q.replyText
-                ? `<span style="color:var(--success-color)">💡 <strong>الرد:</strong> <span style="color:#059669; font-weight:bold;">${q.replyText}</span></span>`
-                : '<span class="live-typing-text">⏳ <em>بانتظار الرد...</em></span>';
-
-            tbody.innerHTML += `<tr>
-                <td><strong>${q.studentName}</strong> (${q.studentGroup})</td>
-                <td>${q.questionText}</td>
-                <td>${replyHtml}</td>
-                <td>${ansBtn}</td>
-            </tr>`;
+            tbody.innerHTML += `<tr><td><strong>${q.studentName}</strong> (${q.studentGroup})</td><td>${q.questionText}</td><td>${q.replyText ? `<span style="color:var(--success-color)">${q.replyText}</span>` : '<span style="color:var(--danger-color)">بانتظار ردك ⏳</span>'}</td><td>${ansBtn}</td></tr>`;
         });
-
-        // 💡 السحر هنا: لو فيه أسئلة بدون رد، أظهر الأيقونة بتاعت نيوتن (ASD.png)
-        let alertIcon = document.getElementById("forum-alert-icon");
-        if (alertIcon) {
-            if (pendingQuestionsCount > 0) {
-                alertIcon.style.display = "block";
-                // إضافة رقم الأسئلة كـ Tooltip
-                alertIcon.title = `يوجد ${pendingQuestionsCount} أسئلة معلقة في المنتدى!`; 
-            } else {
-                alertIcon.style.display = "none";
-            }
-        }
-
-    } catch(e) { 
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">خطأ بالاتصال</td></tr>`; 
-    }
+    } catch(e) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">خطأ بالاتصال</td></tr>`; }
 };
 window.answerForumQuestion = async function(id) {
     let reply = prompt("اكتب الرد النموذجي للسؤال:");
@@ -7363,5 +7330,112 @@ window.checkWhatsappServer = async function() {
         console.error("الفحص فشل:", error);
         nodeStatus.innerHTML = "<span style='color: #ef4444; font-weight: bold;'>متوقف (Offline) ❌</span>";
         waStatus.innerHTML = "<span style='color: #ef4444; font-weight: bold;'>غير متصل ❌</span>";
+    }
+};
+
+
+
+// 1. تحديث دالة فتح نافذة الدفع عشان تظهر حالة الحصة اللي فاتت
+const originalOpenQuickPaymentModal = window.openQuickPaymentModal;
+window.openQuickPaymentModal = function(student) {
+    // تشغيل الكود الأصلي لتعبئة البيانات
+    originalOpenQuickPaymentModal(student);
+    
+    document.getElementById("qpStudentCode").value = student.code;
+
+    // جلب حالة الحصة السابقة للطالب
+    const session = classSessions.find(s => s.id === currentActiveSessionId);
+    let groupSessions = classSessions.filter(s => s.group === session.group).sort((a,b) => new Date(a.date) - new Date(b.date));
+    let currentIndex = groupSessions.findIndex(s => s.id === currentActiveSessionId);
+    let prevStatusHtml = "الحصة السابقة: <span style='color: var(--text-muted);'>لا توجد حصة مسجلة</span>";
+
+    if (currentIndex > 0) {
+        let prevSession = groupSessions[currentIndex - 1];
+        let pStat = prevSession.attendance[student.code] || prevSession.attendance[student.phone];
+        
+        if (pStat === 'present') prevStatusHtml = "الحصة السابقة: <span style='color: #10b981;'>حاضر ✅</span>";
+        else if (pStat === 'late') prevStatusHtml = "الحصة السابقة: <span style='color: #f59e0b;'>متأخر ⏳</span>";
+        else if (pStat === 'absent') prevStatusHtml = "الحصة السابقة: <span style='color: #ef4444;'>غائب ❌</span>";
+        else if (pStat === 'makeup') prevStatusHtml = "الحصة السابقة: <span style='color: #3b82f6;'>حاضر تعويض سنتر 🔄</span>";
+        else if (pStat === 'platform_makeup') prevStatusHtml = "الحصة السابقة: <span style='color: #8b5cf6;'>عوض على المنصة 💻</span>";
+        else prevStatusHtml = "الحصة السابقة: <span style='color: var(--text-muted);'>لم يسجل</span>";
+    }
+    
+    document.getElementById("qpPrevSessionStatus").innerHTML = prevStatusHtml;
+};
+
+// 2. الدالة الجديدة للتعامل مع خيارات الدفع (دفع، إعفاء، لم يدفع)
+window.processPaymentAction = function(action) {
+    let code = document.getElementById("qpStudentCode").value;
+    let amount = parseFloat(document.getElementById("qpAmount").value) || 0;
+    const session = classSessions.find(s => s.id === currentActiveSessionId);
+    const groupObj = groups.find(g => g.name === session.group) || {};
+    const type = groupObj.payType || 'session';
+    
+    const recordKey = `fin_session_${currentActiveSessionId}`;
+    if (!financeRecords[recordKey]) financeRecords[recordKey] = {};
+
+    if (action === 'paid') {
+        financeRecords[recordKey][code] = { status: 'paid', type: type, amount: amount, date: new Date().toISOString() };
+        showToast(`تم تحصيل ${amount} ج.م بنجاح! 💸`);
+        if (type === 'month') {
+            const monthKey = session.date.substring(0, 7);
+            if(!monthlyPayments[code]) monthlyPayments[code] = {};
+            monthlyPayments[code][monthKey] = true;
+            localStorage.setItem("monthlyPayments", JSON.stringify(monthlyPayments));
+        }
+    } else if (action === 'exempt') {
+        financeRecords[recordKey][code] = { status: 'exempt', type: type, amount: 0, date: new Date().toISOString() };
+        showToast(`تم إعفاء الطالب من الدفع 🎁`);
+    } else if (action === 'unpaid') {
+        financeRecords[recordKey][code] = { status: 'unpaid', type: type, amount: 0, date: new Date().toISOString() };
+        showToast(`تم التسجيل: لم يدفع ⚠️`, 'warning');
+    }
+
+    localStorage.setItem("financeRecords", JSON.stringify(financeRecords));
+    if (typeof renderFinanceTable === "function") renderFinanceTable();
+    closeModal("quickPaymentModal");
+    setTimeout(() => document.getElementById('attendanceBarcode').focus(), 100);
+};
+
+// 3. دالة الحضور كتعويض (لما يضرب باركود في مجموعة تانية)
+window.markAttendanceInActualGroup = function() {
+    let targetSessionId = document.getElementById('wgActualGroupSessions').value;
+    if (!targetSessionId || !tempWrongGroupStudent) return;
+
+    let targetSession = classSessions.find(s => s.id === targetSessionId);
+    if (targetSession) {
+        // تسجيل الحالة "makeup" يعني تعويض
+        targetSession.attendance[tempWrongGroupStudent.code] = 'makeup';
+        localStorage.setItem("classSessions", JSON.stringify(classSessions));
+
+        showToast(`✅ تم تسجيل الحضور كتعويض للطالب: ${tempWrongGroupStudent.name} في مجموعته الأصلية.`);
+
+        // فتح شاشة الدفع
+        let autoPaymentEnabled = document.getElementById('autoPaymentCheckbox')?.checked;
+        if (autoPaymentEnabled) {
+            setTimeout(() => openQuickPaymentModal(tempWrongGroupStudent), 500);
+        }
+
+        closeModal('wrongGroupModal');
+        setTimeout(() => document.getElementById('attendanceBarcode').focus(), 100);
+    }
+};
+
+// 4. تحديث جدول الحضور عشان يعرض البادجات الجديدة (تعويض سنتر وتعويض منصة)
+const originalRenderAttendanceTable = window.renderAttendanceTable;
+window.renderAttendanceTable = function(session) {
+    originalRenderAttendanceTable(session);
+    // تلوين الحالات الجديدة في الجدول
+    const tbody = document.getElementById("attendance-list");
+    if (!tbody) return;
+    const rows = tbody.getElementsByTagName("tr");
+    for (let row of rows) {
+        if(row.innerHTML.includes('makeup')) {
+            row.innerHTML = row.innerHTML.replace('makeup', '<span style="color:#3b82f6; font-weight:bold;">تعويض سنتر 🔄</span>');
+        }
+        if(row.innerHTML.includes('platform_makeup')) {
+            row.innerHTML = row.innerHTML.replace('platform_makeup', '<span style="color:#8b5cf6; font-weight:bold;">تعويض منصة 💻</span>');
+        }
     }
 };

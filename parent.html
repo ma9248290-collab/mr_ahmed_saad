@@ -2199,54 +2199,47 @@ window.openStudentCourseDetails = async function(courseId) {
 };
 
 
-// 3. دالة الشراء الجديدة (بتشتري فيديو معين مش كورس كامل)
-window.purchaseVideo = async function(courseId, videoIndex, price, videoTitle) {
-    if(!confirm(`تأكيد خصم ${price} ج.م من محفظتك لشراء محاضرة (${videoTitle})؟`)) return;
-    if((currentStudent.walletBalance || 0) < price) { 
-        showToast("رصيد محفظتك لا يكفي! قم بالشحن أولاً.", "error"); 
-        return; 
-    }
+// ابحث عن دالة purchaseVideo في منصة الطالب وأضف الكود التالي داخل بلوك نجاح الشراء:
+// (بعد سطر: showToast("تم شراء المحاضرة بنجاح! 🎉", "success"); )
+
+let courseObj = window.allLectures.find(l => l.id === courseId);
+if (courseObj && courseObj.videos && courseObj.videos[videoIndex]) {
+    let purchasedVideo = courseObj.videos[videoIndex];
     
-    let btn = event.currentTarget;
-    let origText = btn.innerText;
-    btn.innerText = "جاري الشراء... ⏳"; btn.disabled = true;
-
-    try {
-        let dataRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data.json`);
-        let data = await dataRes.json();
-        let studentIndex = data.students.findIndex(s => s && s.code === currentStudent.code);
+    // لو الفيديو مربوط بحصص في السنتر
+    if (purchasedVideo.linkedSessions && purchasedVideo.linkedSessions.length > 0) {
         
-        if(studentIndex !== -1) {
-            currentStudent.walletBalance -= price;
-            currentStudent.purchasedCourses = Array.isArray(currentStudent.purchasedCourses) ? currentStudent.purchasedCourses : [];
-            
-            // إضافة ID مميز للفيديو في مصفوفة المشتريات
-            let specificVideoId = `${courseId}_v${videoIndex}`;
-            if(!currentStudent.purchasedCourses.includes(specificVideoId)) {
-                currentStudent.purchasedCourses.push(specificVideoId);
-            }
+        // البحث عن حصة السنتر التي تطابق مجموعة الطالب
+        let targetSession = window.allClassSessions.find(s => 
+            purchasedVideo.linkedSessions.includes(s.id) && s.group === currentStudent.group
+        );
 
-            await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/students/${studentIndex}.json`, { 
-                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ walletBalance: currentStudent.walletBalance, purchasedCourses: currentStudent.purchasedCourses }) 
+        if (targetSession) {
+            // جلب الداتا من الفايربيز مباشرة لتعديل الغياب
+            fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/classSessions.json`)
+            .then(res => res.json())
+            .then(sessionsData => {
+                let sessionsArray = Array.isArray(sessionsData) ? sessionsData : Object.values(sessionsData);
+                let sIndex = sessionsArray.findIndex(s => s && s.id === targetSession.id);
+                
+                if (sIndex > -1) {
+                    let currentAtt = sessionsArray[sIndex].attendance || {};
+                    let studentStatus = currentAtt[currentStudent.code] || currentAtt[currentStudent.phone];
+                    
+                    // لو الطالب مش متسجل أو متسجل غايب، هنقلب حالته لـ (تعويض منصة)
+                    if (!studentStatus || studentStatus === 'absent') {
+                        // تحديث الفايربيز مباشرة
+                        fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/classSessions/${sIndex}/attendance.json`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ [currentStudent.code]: 'platform_makeup' })
+                        });
+                    }
+                }
             });
-            
-            showToast("تم شراء المحاضرة بنجاح! 🎉", "success");
-            
-            // تحديث رصيد المحفظة في الشاشة
-            document.getElementById("top-balance").innerText = currentStudent.walletBalance;
-            if(document.getElementById("walletBalanceDisplay")) document.getElementById("walletBalanceDisplay").innerText = currentStudent.walletBalance;
-            if(document.getElementById("wallet-page-balance")) document.getElementById("wallet-page-balance").innerHTML = `${currentStudent.walletBalance} <span style="font-size: 24px; color: rgba(255,255,255,0.7);">ج.م</span>`;
-
-            // ريفريش النافذة عشان الزرار يقلب أخضر (تشغيل)
-            openStudentCourseDetails(courseId);
         }
-    } catch(e) { 
-        showToast("حدث خطأ أثناء الشراء! تأكد من الإنترنت.", "error"); 
-        btn.innerText = origText; btn.disabled = false;
     }
-};
-
+}
 
         window.redeemCode = async function() {
             const code = document.getElementById("rechargeCodeInput").value.trim();
