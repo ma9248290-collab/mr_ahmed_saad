@@ -5205,16 +5205,49 @@ window.loadPlatformForumQuestions = async function() {
         let data = await res.json() || {};
         tbody.innerHTML = "";
         let keys = Object.keys(data).reverse();
+        
+        let pendingQuestionsCount = 0; // 💡 عشان نعد الأسئلة اللي لسه متردش عليها
+
         if(keys.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">لا توجد أسئلة معلقة حالياً 🎉</td></tr>`;
+            document.getElementById("forum-alert-icon").style.display = "none"; // إخفاء الصورة
             return;
         }
+
         keys.forEach(id => {
             let q = data[id];
+            
+            // لو مفيش رد، نزود العداد
+            if (!q.replyText) pendingQuestionsCount++;
+
             let ansBtn = `<button class="save-btn" style="background:#3b82f6; width:auto; padding:5px 12px; margin:0;" onclick="answerForumQuestion('${id}')">💬 الرد</button>`;
-            tbody.innerHTML += `<tr><td><strong>${q.studentName}</strong> (${q.studentGroup})</td><td>${q.questionText}</td><td>${q.replyText ? `<span style="color:var(--success-color)">${q.replyText}</span>` : '<span style="color:var(--danger-color)">بانتظار ردك ⏳</span>'}</td><td>${ansBtn}</td></tr>`;
+            let replyHtml = q.replyText
+                ? `<span style="color:var(--success-color)">💡 <strong>الرد:</strong> <span style="color:#059669; font-weight:bold;">${q.replyText}</span></span>`
+                : '<span class="live-typing-text">⏳ <em>بانتظار الرد...</em></span>';
+
+            tbody.innerHTML += `<tr>
+                <td><strong>${q.studentName}</strong> (${q.studentGroup})</td>
+                <td>${q.questionText}</td>
+                <td>${replyHtml}</td>
+                <td>${ansBtn}</td>
+            </tr>`;
         });
-    } catch(e) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">خطأ بالاتصال</td></tr>`; }
+
+        // 💡 السحر هنا: لو فيه أسئلة بدون رد، أظهر الأيقونة بتاعت نيوتن (ASD.png)
+        let alertIcon = document.getElementById("forum-alert-icon");
+        if (alertIcon) {
+            if (pendingQuestionsCount > 0) {
+                alertIcon.style.display = "block";
+                // إضافة رقم الأسئلة كـ Tooltip
+                alertIcon.title = `يوجد ${pendingQuestionsCount} أسئلة معلقة في المنتدى!`; 
+            } else {
+                alertIcon.style.display = "none";
+            }
+        }
+
+    } catch(e) { 
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">خطأ بالاتصال</td></tr>`; 
+    }
 };
 window.answerForumQuestion = async function(id) {
     let reply = prompt("اكتب الرد النموذجي للسؤال:");

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم المدرس | السعداوي</title>
+    <title>لوحة تحكم المدرس | الفيزيائى</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,18 +19,22 @@
     
 
 
+    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="login-overlay">
         <div class="login-card">
-        <div style="text-align: center; margin-top: 10px; margin-bottom: 0;">
-    <!-- الأخطبوط اللي بيشاور (متوسط الحجم وجوه الكارت) -->
-    <img src="logo.png" style="width: 80px; height: auto;">
-</div>
-           <h2 class="logo" style="margin-bottom: 5px;">السعداوي <span class="dot">.</span></h2>
-<span style="display: block; font-size: 16px; color: var(--primary-color); font-weight: 900; margin-bottom: 15px;">أحمد سعد</span>
+            
+            <!-- 🌟 اللوجو الطاير بره الكارت زي المنصات العالمية -->
+            <div style="text-align: center; margin-top: -75px; margin-bottom: 15px;">
+                <div style="width: 110px; height: 110px; margin: 0 auto; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border: 5px solid white; position: relative;">
+                    <img src="ASD.png" style="width: 95%; height: 95%; object-fit: contain; transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.15));">
+                </div>
+            </div>
+            
+            <h2 class="logo" style="margin-bottom: 5px;">الفيزيائى <span class="dot">.</span></h2>
+            <span style="display: block; font-size: 16px; color: var(--primary-color); font-weight: 900; margin-bottom: 15px;">Ahmed Saad</span>
             <h3 style="margin-bottom: 20px; color: var(--text-main);">تسجيل الدخول</h3>
+            
             <form id="loginForm">
-                
-                
                 <div class="input-group" style="text-align: right;">
                     <label>اسم المستخدم</label>
                     <input type="text" id="loginUsername" required class="custom-input" placeholder="مثال: shefo">
@@ -47,30 +51,40 @@
                 
                 <button type="submit" class="save-btn" style="margin-top: 20px; font-size: 16px; width: 100%;">دخول النظام 🚀</button>
             </form>
+            
             <p id="loginError" style="color: var(--danger-color); margin-top: 15px; display: none; font-weight: bold;">البيانات غير صحيحة!</p>
             
-            </div>
         </div>
     </div>
 
     <div class="dashboard-container" id="main-app" style="display: none;">
         
         <aside class="sidebar no-print">
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
-        <img src="logo.png" style="width: 70px; height: auto;">
-        <div style="text-align: right;">
-            <h2 class="logo" style="margin: 0; line-height: 1.1;">السعداوي</h2>
-            <span style="display: block; font-size: 20px; color: var(--primary-color); font-weight: 800; letter-spacing: 1px;">أحمد سعد</span>
-            
-            <!-- 🌐 الكود الجديد: مؤشر حالة الإنترنت -->
-            <div id="network-status-badge" style="display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 11px; font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 20px; color: #10b981; width: max-content; transition: 0.3s;">
-                <span id="network-status-dot" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 5px #10b981; transition: 0.3s;"></span>
-                <span id="network-status-text">متصل بالإنترنت</span>
-            </div>
-            <!-- نهاية الكود الجديد -->
+            <!-- 🌟 الهيدر الجديد للقائمة الجانبية (شكل 3D رايق) -->
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px; position: relative;">
+                
+                <!-- 1. صورة نيوتن (ASD) بتصميم بارز زي ايديو تراك -->
+                <div style="position: relative; width: 85px; height: 85px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 4px solid white; flex-shrink: 0;">
+                    <!-- الصورة محطوطة بحيث تطلع بره الدائرة سنة بتأثير 3D -->
+                    <img src="ASD.png" style="width: 95%; height: 95%; object-fit: contain; transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 5px 10px rgba(0,0,0,0.15));">
+                    
+                    <!-- جرس إشعار المنتدى (مصغر وشيك) -->
+                    
+                </div>
 
-        </div>
-    </div>
+                <!-- 2. النصوص وحالة الإنترنت -->
+                <div style="text-align: right;">
+                    <h2 class="logo" style="margin: 0; line-height: 1.1; font-size: 24px; color: var(--secondary-color);">الفيزيائى</h2>
+                    <span style="display: block; font-size: 15px; color: var(--primary-color); font-weight: 900; letter-spacing: 1px;">Ahmed Saad</span>
+                    
+                    <!-- 🌐 مؤشر حالة الإنترنت -->
+                    <div id="network-status-badge" style="display: flex; align-items: center; gap: 5px; margin-top: 8px; font-size: 11px; font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 20px; color: #10b981; width: max-content; transition: 0.3s; margin-left: auto;">
+                        <span id="network-status-dot" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 5px #10b981; transition: 0.3s;"></span>
+                        <span id="network-status-text">متصل بالإنترنت</span>
+                    </div>
+                </div>
+
+            </div>
 <!-- باقي القائمة الجانبية... -->
 
             <style>
@@ -106,7 +120,14 @@
                 }
                 .dropdown-menu li a:hover { background: var(--hover-bg); color: var(--primary-color); padding-right: 20px; }
                 .dropdown-menu li.active a { color: var(--primary-color); font-weight: 900; background: rgba(59, 130, 246, 0.1); border-right: 3px solid var(--primary-color); }
+                
                 @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+                
+                /* 💡 أنيميشن لصورة الإشعار (نيوتن والتفاحة) */
+                @keyframes bounceAlert {
+                    0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+                    50% { transform: translateY(-5px) scale(1.1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+                }
             </style>
 
             <script>
@@ -2112,7 +2133,7 @@
     <div id="demoRegistrationModal" class="login-overlay" style="display: none; z-index: 10000000;">
         <div class="login-card" style="width: 400px;">
             <h2 style="color: var(--primary); margin-bottom: 10px;">أهلاً بك في النسخة التجريبية 🚀</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">يرجى إدخال بياناتك لبدء تجربة السعداوي لمدة 7 أيام مجاناً</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">يرجى إدخال بياناتك لبدء تجربة الفيزيائى لمدة 7 أيام مجاناً</p>
             <form id="demoRegistrationForm">
                 <div class="input-group" style="text-align: right;">
                     <label>الاسم</label>

@@ -12,8 +12,8 @@
 * { box-sizing: border-box; scroll-behavior: smooth; } 
 
 :root {
-    --primary: #027a3e;       /* أحمر عنابي (تاريخي فخم) */
-    --primary-hover: #03582d
+    --primary: #0a0098;       /* أحمر عنابي (تاريخي فخم) */
+    --primary-hover: #09044f
     ; /* أحمر داكن للـ Hover */
     --secondary: #0f172a;     /* كحلي ملكي داكن جداً */ 
     --accent: #d97706;        /* ذهبي أنيق */
@@ -289,7 +289,6 @@ body {
     .auth-form-side { padding: 40px 25px; }
 
 
-
     /* 📱 تظبيط الكلمات الطايرة عشان متغطيش على وش المستر في الموبايل */
     .hero-image-wrapper img { 
         max-width: 85%; /* تصغير الصورة سنة عشان ندي مساحة للكلمات على الأطراف */
@@ -394,7 +393,7 @@ body {
         <nav class="landing-navbar">
             <div class="landing-logo">
                 <img src="logo.png" alt="Logo">
-                <span id="nav-brand-name">السعداوي:محمود سعد</span>
+                <span id="nav-brand-name">أحمد سعد</span>
             </div>
             <div class="nav-actions">
                 <button class="btn-outline" onclick="openAuthModal('register')">إنشاء حساب</button>
@@ -414,7 +413,7 @@ body {
                 </div>
 
                 <h1>تعلم <span style="color: var(--primary);" id="typewriter-text"></span><span class="cursor">|</span> <br> بأبسط وأمتع الطرق</h1>
-                <p>انضم لكتيبة الأوائل مع <strong id="hero-teacher-name">مستر محمود سعد (السعداوي)</strong>، خبير تدريس مادة الكيمياء. أسلوب مبتكر، متابعة مستمرة، وتدريب على أحدث نظم الامتحانات لضمان الدرجة النهائية.</p>
+                <p>انضم لكتيبة الأوائل مع <strong id="hero-teacher-name">مستر أحمد سعد (الفيزيائى)</strong>، خبير تدريس مادة الفيزياء. أسلوب مبتكر، متابعة مستمرة، وتدريب على أحدث نظم الامتحانات لضمان الدرجة النهائية.</p>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                     <button class="btn-solid" style="padding: 16px 45px; font-size: 20px;" onclick="openAuthModal('login')">ابدأ رحلتك الآن</button>
                 </div>
@@ -423,10 +422,10 @@ body {
             <div class="hero-image-wrapper">
                 <div class="hero-image-bg"></div>
                 <!-- صورة المستر -->
-                <img src="mr.png" alt="مستر محمود سعد" id="hero-teacher-img">
+                <img src="mr.png" alt="مستر أحمد سعد" id="hero-teacher-img">
                 
                 <!-- العناصر الطايرة الزجاجية (Glassmorphism) -->
-                <div class="float-icon float-1">الكيمياء 📜</div>
+                <div class="float-icon float-1">الفيزياء 📜</div>
                 <div class="float-icon float-2">نواتج التعلم 💡</div>
                 <div class="float-icon float-3">الدرجه النهائية 🎯</div>
             </div>
@@ -449,52 +448,50 @@ body {
         </div>
 
 <!-- المميزات (كروت نظيفة وفخمة) -->
-<section class="features-section">
-    <h2>خطتك للتفوق في الكيمياء</h2>
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon">🎓</div>
-            <h3>1. اختار صفك</h3>
-            <p>أول خطوة، بتختار صفك الدراسي عشان تلاقي منهج الكيمياء بتاعك مترتب وجاهز، بشرح وافي لكل المعادلات، التفاعلات، وقوانين المسائل الكيميائية.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🎬</div>
-            <h3>2. شوف المحاضرات</h3>
-            <p>هتتفرج على شرح مستر محمود سعد المبسط لكل تفاصيل المنهج، وتأسيس قوي يخليك تفهم الكيمياء وتتقن التفاعلات وحل المسائل في ثواني.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">💯</div>
-            <h3>3. طبق وامتحن</h3>
-            <p>حل امتحانات إلكترونية شاملة على النظام الجديد، وتدرب على كل أفكار التركات والمعادلات عشان تقفل المادة بكل ثقة.</p>
-        </div>
-    </div>
-</section>
-
-
+        <section class="features-section">
+            <h2>خطتك للتفوق في الفيزياء</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎓</div>
+                    <h3>1. اختار صفك</h3>
+                    <p>أول خطوة، بتختار صفك الدراسي عشان تلاقي منهج الفيزياء بتاعك مترتب وجاهز، بشرح وافي لكل القوانين، الأفكار، والمسائل المعقدة.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎬</div>
+                    <h3>2. شوف المحاضرات</h3>
+                    <p>هتتفرج على شرح مستر أحمد سعد المبسط لكل تفاصيل المنهج، وتأسيس قوي يخليك تفهم الفيزياء وتحل أي مسألة في ثواني.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💯</div>
+                    <h3>3. طبق وامتحن</h3>
+                    <p>حل امتحانات إلكترونية شاملة على النظام الجديد، وتدرب على كل أفكار المسائل والتركات عشان تقفل المادة بكل ثقة.</p>
+                </div>
+            </div>
+        </section>
        <!-- التواصل (Social Media VIP) -->
         <section class="contact-section">
             <h2>عن الأستاذ والتواصل</h2>
             <p style="font-size: 18px; margin-bottom: 30px; opacity: 0.8; color: var(--text-muted);" id="footer-teacher-desc">
-                مستر محمود سعد (السعداوي) - خبير تدريس مادة الكيمياء.<br>
+                مستر أحمد سعد (الفيزيائى) - خبير تدريس مادة الفيزياء.<br>
                 صانع الأوائل، وصاحب أكبر عدد من الطلاب المتفوقين بفضل الله ثم أسلوبه الفريد في الشرح والتبسيط.
             </p>
        
             <!-- زراير السوشيال ميديا باللوجوهات -->
             <div class="contact-numbers">
                 <!-- فيسبوك -->
-                <a href="https://www.facebook.com/share/1DSrjPnX5s/" target="_blank" class="social-btn btn-facebook">
+                <a href="https://www.facebook.com/" target="_blank" class="social-btn btn-facebook">
                     <svg class="social-icon-img" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     صفحتنا على فيسبوك
                 </a>
                 
                 <!-- يوتيوب -->
-                <a href="https://www.youtube.com/@Mr.mahmoudsaad_chem" target="_blank" class="social-btn btn-youtube">
+                <a href="https://www.youtube.com/" target="_blank" class="social-btn btn-youtube">
                     <svg class="social-icon-img" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                     قناتنا على يوتيوب
                 </a>
                 
                 <!-- واتساب -->
-                <a href="https://wa.me/201023088124" target="_blank" class="social-btn btn-whatsapp">
+                <a href="https://wa.me/201098424230" target="_blank" class="social-btn btn-whatsapp">
                     <svg class="social-icon-img" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a5.8 5.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                     تواصل معنا
                 </a>
@@ -616,7 +613,7 @@ body {
                 <div class="modal-logo-wrapper">
                     <img src="logo.png" id="modal-teacher-img" alt="Logo">
                 </div>
-                <h1 id="modal-teacher-name" style="font-size: 32px; font-weight: 900; margin: 0 0 15px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">مستر محمود سعد</h1>
+                <h1 id="modal-teacher-name" style="font-size: 32px; font-weight: 900; margin: 0 0 15px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">مستر أحمد سعد</h1>
                 <p style="font-size: 16px; line-height: 1.8; color: #cbd5e1; font-weight: bold; max-width: 90%;">سجل دخولك لتتمكن من مشاهدة المحاضرات، حل الامتحانات، ومعرفة نتيجتك أولاً بأول.</p>
                 
                 <div id="teacher-contact-box" style="margin-top: 30px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; font-size: 15px; width: 100%; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
@@ -646,12 +643,16 @@ body {
         <!-- شريط علوي -->
         <header class="topbar">
             <div class="student-info">
-                <img src="logo.png" style="width: 45px; height: auto; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <div style="margin-right: 10px;">
+                <!-- 🌟 الأيقونة العلوية 3D في منصة الطالب -->
+                <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #f8fafc, #e2e8f0); border-radius: 50%; display: flex; justify-content: center; align-items: flex-end; border: 2px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: visible;">
+                    <img src="ASD.png" style="width: 90%; height: 90%; object-fit: contain; transform: scale(1.2) translateY(-2px);">
+                </div>
+                <div>
                     <h3 class="student-name" id="top-name">اسم الطالب</h3>
-                    <span style="font-size: 12px; color: var(--text-muted); font-weight: bold;" id="top-group">المجموعة</span>
+                    <span style="font-size: 12px; color: var(--text-muted);" id="top-group">المجموعة</span>
                 </div>
             </div>
+            <!-- باقي الكود بتاع topbar زي ما هو -->
             
             <div style="display: flex; gap: 10px; align-items: center;">
                 <div style="position: relative;">
@@ -929,7 +930,7 @@ body {
        // ==========================================
         // ⚙️ المتغيرات الأساسية ودوال التنقل بين الشاشات
         // ==========================================
-        let globalTeacherId = "MahmoudSaad_System"; // 🔒 التثبيت هنا
+        let globalTeacherId = "AhmedSaad_System"; // 🔒 التثبيت هنا
         let currentStudent = null;
         let allOnlineExams = [];
         let currentExam = null;
@@ -991,11 +992,11 @@ body {
                 let settings = await res.json();
                 
                 if (settings) {
-                    let tName = settings.teacherName || "محمود سعد";
+                    let tName = settings.teacherName || "أحمد سعد";
                     let cName = settings.centerName || "El-Senior";
 
                     // أسماء المستر في الصفحة الرئيسية والمودال والمنصة
-                   if(document.getElementById("nav-brand-name")) document.getElementById("nav-brand-name").innerText ="السعداوي: محمود سعد"; // مؤقت لحد ما الطالب يسجل
+                   if(document.getElementById("nav-brand-name")) document.getElementById("nav-brand-name").innerText ="الفيزيائى: أحمد سعد"; // مؤقت لحد ما الطالب يسجل
                     if(document.getElementById("hero-teacher-name")) document.getElementById("hero-teacher-name").innerText = `مستر ${tName}`;
                     if(document.getElementById("modal-teacher-name")) document.getElementById("modal-teacher-name").innerText = `مستر ${tName}`;
                     if(document.getElementById("top-name")) document.getElementById("top-name").innerText = `مرحباً بك!`; // مؤقت لحد ما الطالب يسجل
@@ -1027,8 +1028,8 @@ body {
         }
 
         window.onload = function() {
-            const savedCode = localStorage.getItem("MahmoudSaad_student_code");
-            const savedPhone = localStorage.getItem("MahmoudSaad_parent_phone");
+            const savedCode = localStorage.getItem("ahmedsaad_student_code");
+            const savedPhone = localStorage.getItem("ahmedsaad_parent_phone");
             
             loadTeacherInfoInitial(); 
 
@@ -1080,7 +1081,7 @@ body {
                         errorMsg.innerText = "عفواً، المنصة متوقفة حالياً. يرجى مراجعة إدارة السنتر!";
                         if(btn) { btn.innerHTML = "تسجيل الدخول 🚀"; btn.disabled = false; }
                         if(isAutoLogin) {
-                            localStorage.removeItem("MahmoudSaad_student_code"); localStorage.removeItem("MahmoudSaad_parent_phone"); localStorage.removeItem("MahmoudSaad_teacher_id");
+                            localStorage.removeItem("ahmedsaad_student_code"); localStorage.removeItem("ahmedsaad_parent_phone"); localStorage.removeItem("ahmedsaad_teacher_id");
                         }
                         return; 
                     }
@@ -1136,9 +1137,9 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 // ==========================================
                 applyDynamicTheme(currentStudent.level);
 
-                localStorage.setItem("MahmoudSaad_student_code", code);
-                localStorage.setItem("MahmoudSaad_parent_phone", phone);
-                localStorage.setItem("MahmoudSaad_teacher_id", globalTeacherId);
+                localStorage.setItem("ahmedsaad_student_code", code);
+                localStorage.setItem("ahmedsaad_parent_phone", phone);
+                localStorage.setItem("ahmedsaad_teacher_id", globalTeacherId);
 
                 allOnlineExams = data.onlineExams || [];
                 window.studentCode = code;
@@ -1238,9 +1239,9 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
         // 🌟 باقي الدوال
         // ==========================================
         function logoutStudent() {
-            localStorage.removeItem("MahmoudSaad_student_code");
-            localStorage.removeItem("MahmoudSaad_parent_phone");
-            localStorage.removeItem("MahmoudSaad_teacher_id");
+            localStorage.removeItem("ahmedsaad_student_code");
+            localStorage.removeItem("ahmedsaad_parent_phone");
+            localStorage.removeItem("ahmedsaad_teacher_id");
             location.reload(); 
         }
 
@@ -1253,7 +1254,7 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
         }
 
         async function submitRegistration() {
-            globalTeacherId = "MahmoudSaad_System";
+            globalTeacherId = "AhmedSaad_System";
             let type = document.getElementById("regType").value;
             
             let genderInput = document.getElementById("regGender");
@@ -1391,7 +1392,7 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
             msgEl.style.display = "none";
 
             try {
-                let globalTeacherId = "MahmoudSaad_System";
+                let globalTeacherId = "AhmedSaad_System";
                 let res = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/students.json`);
                 let studentsArray = await res.json() || [];
                 studentsArray = Array.isArray(studentsArray) ? studentsArray : Object.values(studentsArray).filter(s => s !== null);
@@ -2390,7 +2391,7 @@ window.addEventListener('popstate', function(event) {
 
 
 // تأثير الآلة الكاتبة
-const texts = ["الكيمياء", "القوانين", "نواتج التعلم", "حل الامتحانات"];
+const texts = ["الفيزياء", "القوانين", "نواتج التعلم", "حل الامتحانات"];
 let count = 0;
 let index = 0;
 let currentText = '';
