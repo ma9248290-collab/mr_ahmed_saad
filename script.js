@@ -5652,14 +5652,27 @@ window.openStudentProfile = function(code) {
     if (waParentBtn) waParentBtn.onclick = function() { if(student.parentPhone && student.parentPhone !== "0" && student.parentPhone !== "") window.open(`https://wa.me/20${student.parentPhone.replace(/^0+/, '')}`, '_blank'); else showToast("رقم ولي الأمر غير مسجل!", "error"); };
 
     const groupSessions = classSessions.filter(s => s.group === student.group).sort((a,b) => new Date(b.date) - new Date(a.date));
-    let attended = 0; const attTbody = document.getElementById("profile-attendance-list"); if(attTbody) attTbody.innerHTML = "";
+    let attended = 0; 
+    const attTbody = document.getElementById("profile-attendance-list"); 
+    if(attTbody) attTbody.innerHTML = "";
+    
     groupSessions.forEach(s => { 
         const st = s.attendance[student.code] || s.attendance[student.phone]; 
-        if(st === 'present' || st === 'late') attended++; 
-        const badge = st === 'present' ? `<span style="color:var(--success-color); font-weight:bold;">حاضر ✓</span>` : st === 'late' ? `<span style="color:#f59e0b; font-weight:bold;">متأخر ⏳</span>` : st === 'absent' ? `<span style="color:var(--danger-color); font-weight:bold;">غائب ✗</span>` : `<span style="color:var(--text-muted); font-weight:bold;">لم يسجل</span>`; 
+        // نحسب التعويض كحضور في النسبة المئوية
+        if(st === 'present' || st === 'late' || st === 'makeup' || st === 'platform_makeup') attended++; 
+        
+        let badge = '<span style="color:var(--text-muted); font-weight:bold;">لم يسجل</span>';
+        if (st === 'present') badge = '<span style="color:var(--success-color); font-weight:bold;">حاضر ✓</span>';
+        else if (st === 'late') badge = '<span style="color:#f59e0b; font-weight:bold;">متأخر ⏳</span>';
+        else if (st === 'absent') badge = '<span style="color:var(--danger-color); font-weight:bold;">غائب ✗</span>';
+        else if (st === 'makeup') badge = '<span style="color:#3b82f6; font-weight:bold;">تعويض سنتر 🔄</span>';
+        else if (st === 'platform_makeup') badge = '<span style="color:#8b5cf6; font-weight:bold;">تعويض منصة 💻</span>';
+        
         if(attTbody) attTbody.innerHTML += `<tr><td>${s.date}</td><td>${badge}</td></tr>`; 
     });
     document.getElementById("profile-attendance").innerText = `${groupSessions.length > 0 ? Math.round((attended / groupSessions.length) * 100) : 0}%`;
+
+
 
     const groupExams = exams.filter(e => e.group === student.group).sort((a,b) => new Date(b.date) - new Date(a.date));
     let tExam = 0, sExam = 0; const exTbody = document.getElementById("profile-exams-list"); if(exTbody) exTbody.innerHTML = "";
@@ -5797,7 +5810,8 @@ window.renderGroupStudentsTable = function() {
                 if (status === 'present') { dotColor = "#10b981"; tooltipText = `${session.date}: حاضر ✅`; }
                 else if (status === 'late') { dotColor = "#f59e0b"; tooltipText = `${session.date}: متأخر ⏳`; }
                 else if (status === 'absent') { dotColor = "#ef4444"; tooltipText = `${session.date}: غائب ❌`; }
-                else if (typeof status === 'object' && status.status === 'makeup') { dotColor = "#2563eb"; tooltipText = `${session.date}: حاضر كتعويض 💻`; }
+                else if (status === 'makeup') { dotColor = "#3b82f6"; tooltipText = `${session.date}: تعويض سنتر 🔄`; }
+                else if (status === 'platform_makeup') { dotColor = "#8b5cf6"; tooltipText = `${session.date}: تعويض منصة 💻`; }
             }
             attendanceDotsHtml += `<span style="width: 14px; height: 14px; border-radius: 50%; background-color: ${dotColor}; display: inline-block; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); cursor: help;" title="${tooltipText}"></span>`;
         }
@@ -5898,7 +5912,15 @@ window.generateAdvancedReport = function() {
         let rowHtml = `<tr><td style="font-weight: bold; color: var(--primary-color);">${st.code}</td><td>${st.name}</td><td>${st.group}</td>`;
         filteredItems.forEach(item => {
             let cellValue = "--";
-            if (type === 'attendance') { let stat = item.attendance[st.code] || item.attendance[st.phone]; if (stat === 'present') cellValue = "حاضر"; else if (stat === 'absent') cellValue = "غائب"; } 
+            if (type === 'attendance') {
+                let stat = item.attendance[st.code] || item.attendance[st.phone];
+                if (stat === 'present') cellValue = "حاضر";
+                else if (stat === 'late') cellValue = "متأخر";
+                else if (stat === 'absent') cellValue = "غائب";
+                else if (stat === 'makeup') cellValue = "تعويض سنتر";
+                else if (stat === 'platform_makeup') cellValue = "تعويض منصة";
+            }
+            
             else if (type === 'exams' || type === 'homework') { let g = item.grades[st.code] !== undefined ? item.grades[st.code] : item.grades[st.phone]; if (g !== undefined) { cellValue = `${g} / ${item.maxScore}`; } else { cellValue = "لم يُمتحن/لم يُسلم"; } }
             rowHtml += `<td>${cellValue}</td>`;
         });
@@ -6026,33 +6048,37 @@ window.markAttendance = function(codeOrPhone, status) {
         if(typeof notifyParentApp === 'function') notifyParentApp(student.code, title, msg);
     }
 };
+
+
 window.renderAttendanceTable = function(session) { 
-    const tbody = document.getElementById("attendance-list"); const gStudents = students.filter(s => s.group === session.group); 
-    if(gStudents.length===0) return tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;">لا يوجد طلاب</td></tr>`; 
+    const tbody = document.getElementById("attendance-list"); 
+    const gStudents = students.filter(s => s.group === session.group); 
+    if(gStudents.length === 0) return tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">لا يوجد طلاب</td></tr>`; 
     
-    const groupS = classSessions.filter(s => s.group === session.group).sort((a,b)=>new Date(a.date)-new Date(b.date)); 
+    const groupS = classSessions.filter(s => s.group === session.group).sort((a,b) => new Date(a.date) - new Date(b.date)); 
     const prevSession = groupS[groupS.findIndex(s => s.id === session.id) - 1]; 
     
     let htmlContent = ""; 
 
     gStudents.forEach(st => { 
+        // 1. حالة الحصة الحالية
         const stat = session.attendance[st.code] || session.attendance[st.phone]; 
-        const statHtml = stat === 'present' ? '<span style="color:#10b981; font-weight:bold;">حاضر ✓</span>' : stat === 'late' ? '<span style="color:#f59e0b; font-weight:bold;">متأخر ⏳</span>' : stat === 'absent' ? '<span style="color:#ef4444; font-weight:bold;">غائب ❌</span>' : '<span style="color:#64748b;">لم يسجل</span>'; 
-        
+        let statHtml = '<span style="color:#64748b; font-weight:bold;">لم يسجل</span>';
+        if (stat === 'present') statHtml = '<span style="color:#10b981; font-weight:bold;">حاضر ✓</span>';
+        else if (stat === 'late') statHtml = '<span style="color:#f59e0b; font-weight:bold;">متأخر ⏳</span>';
+        else if (stat === 'absent') statHtml = '<span style="color:#ef4444; font-weight:bold;">غائب ❌</span>';
+        else if (stat === 'makeup') statHtml = '<span style="color:#3b82f6; font-weight:bold;">تعويض سنتر 🔄</span>';
+        else if (stat === 'platform_makeup') statHtml = '<span style="color:#8b5cf6; font-weight:bold;">تعويض منصة 💻</span>';
+
+        // 2. حالة الحصة السابقة
         let pHT = '--'; 
         if(prevSession) { 
             const p = prevSession.attendance[st.code] || prevSession.attendance[st.phone]; 
-            pHT = p==='present'?'<span style="color:#10b981; font-weight:bold;">حاضر</span>':p==='late'?'<span style="color:#f59e0b; font-weight:bold;">متأخر</span>':p==='absent'?'<span style="color:#ef4444; font-weight:bold;">غائب</span>':'--'; 
-            
-            if (window.platformLectures && window.platformTracking) {
-                let linkedLecture = window.platformLectures.find(l => l.linkedSession === prevSession.id || (l.linkedSessions && l.linkedSessions.includes(prevSession.id)));
-                if (linkedLecture) {
-                    let trackData = window.platformTracking[linkedLecture.id];
-                    if (trackData && (trackData[st.phone] || trackData[st.code])) {
-                        pHT = '<span style="color:#2563eb; font-weight:900; background:rgba(37,99,235,0.1); padding:4px 10px; border-radius:8px; border: 1px solid rgba(37,99,235,0.2);">💻 حاضر منصة</span>';
-                    }
-                }
-            }
+            if (p === 'present') pHT = '<span style="color:#10b981; font-weight:bold;">حاضر</span>';
+            else if (p === 'late') pHT = '<span style="color:#f59e0b; font-weight:bold;">متأخر</span>';
+            else if (p === 'absent') pHT = '<span style="color:#ef4444; font-weight:bold;">غائب</span>';
+            else if (p === 'makeup') pHT = '<span style="color:#3b82f6; font-weight:bold;">تعويض سنتر</span>';
+            else if (p === 'platform_makeup') pHT = '<span style="color:#8b5cf6; font-weight:bold;">تعويض منصة</span>';
         } 
         
         let noteIcon = st.note && st.note.trim() !== "" ? `<span style="cursor: pointer; margin-right: 8px; font-size: 16px; filter: drop-shadow(0 2px 4px rgba(139,92,246,0.4));" title="يوجد ملاحظة (اضغط للعرض)" onclick="openStudentNoteModal('${st.code}')">📝</span>` : `<span style="cursor: pointer; margin-right: 8px; font-size: 14px; opacity: 0.3;" title="إضافة ملاحظة" onclick="openStudentNoteModal('${st.code}')">📝</span>`;
