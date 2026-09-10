@@ -4044,7 +4044,6 @@ window.updateAllVideoSessionsCheckboxes = function(levelSelectId, rowClass) {
         let container = row.querySelector('.vid-sessions-list-container');
         if(!container) return;
         
-        // 🚀 القراءة الإجبارية المباشرة (Foolproof)
         let checkedValues = [];
         container.querySelectorAll('.vid-session-cb').forEach(cb => {
             if (cb.checked) checkedValues.push(String(cb.value));
@@ -4055,7 +4054,7 @@ window.updateAllVideoSessionsCheckboxes = function(levelSelectId, rowClass) {
             html = `<span style="color: var(--danger-color); font-size: 12px; font-weight: bold;">لا توجد حصص مسجلة لهذا الصف!</span>`;
         } else {
             validSessions.forEach(s => {
-                let isChecked = checkedValues.includes(String(s.id)) ? "checked" : "";
+                let isChecked = checkedValues.includes(String(s.id)) ? 'checked="checked"' : "";
                 html += `
                 <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; font-weight: bold; margin-bottom: 4px;">
                     <input type="checkbox" value="${s.id}" ${isChecked} class="vid-session-cb" style="accent-color: var(--success-color); width: 16px; height: 16px;">
@@ -4098,6 +4097,7 @@ window.addCourseVideoRow = function(title = "", url = "", linkedSessions = [], r
     // 🚀 توحيد البيانات لنصوص لمنع مشاكل Firebase
     let safeLinkedSessions = [];
     if (Array.isArray(linkedSessions)) safeLinkedSessions = linkedSessions.map(String);
+    else if (typeof linkedSessions === 'object' && linkedSessions !== null) safeLinkedSessions = Object.values(linkedSessions).map(String);
     else if (linkedSessions) safeLinkedSessions = [String(linkedSessions)];
 
     let sessionsCheckboxes = '';
@@ -4105,7 +4105,7 @@ window.addCourseVideoRow = function(title = "", url = "", linkedSessions = [], r
         sessionsCheckboxes = `<span style="color: var(--danger-color); font-size: 12px; font-weight: bold;">لا توجد حصص مسجلة لهذا الصف!</span>`;
     } else {
         validSessions.forEach(s => {
-            let isChecked = safeLinkedSessions.includes(String(s.id)) ? "checked" : "";
+            let isChecked = safeLinkedSessions.includes(String(s.id)) ? 'checked="checked"' : "";
             sessionsCheckboxes += `
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; font-weight: bold; margin-bottom: 4px;">
                 <input type="checkbox" value="${s.id}" ${isChecked} class="vid-session-cb" style="accent-color: var(--success-color); width: 16px; height: 16px;">
@@ -4224,10 +4224,15 @@ window.openEditCourseModal = function(id) {
     
     if(lec.videos && lec.videos.length > 0) {
         lec.videos.forEach(v => {
-            // 🚀 تحويل محمي لأي داتا قديمة
+            // 🚀 الإصلاح الجذري: تحويل آمن لبيانات فايربيز حتى لو راجعة Object
             let savedVideoSessions = [];
-            if (Array.isArray(v.linkedSessions)) savedVideoSessions = v.linkedSessions.map(String);
-            else if (v.linkedSessions) savedVideoSessions = [String(v.linkedSessions)];
+            if (Array.isArray(v.linkedSessions)) {
+                savedVideoSessions = v.linkedSessions.map(String);
+            } else if (typeof v.linkedSessions === 'object' && v.linkedSessions !== null) {
+                savedVideoSessions = Object.values(v.linkedSessions).map(String);
+            } else if (v.linkedSessions) {
+                savedVideoSessions = [String(v.linkedSessions)];
+            }
 
             if(v.linkedSession && !savedVideoSessions.includes(String(v.linkedSession))) savedVideoSessions.push(String(v.linkedSession)); 
             
@@ -4247,9 +4252,10 @@ window.addEditCourseVideoRow = function(title = "", url = "", linkedSessions = [
     let validGroups = groups.filter(g => level === 'all' || g.level === level).map(g => g.name);
     let validSessions = classSessions.filter(s => validGroups.includes(s.group)).reverse();
     
-    // 🚀 توحيد البيانات للحماية
+    // 🚀 توحيد البيانات للحماية من أخطاء فايربيز
     let safeLinkedSessions = [];
     if (Array.isArray(linkedSessions)) safeLinkedSessions = linkedSessions.map(String);
+    else if (typeof linkedSessions === 'object' && linkedSessions !== null) safeLinkedSessions = Object.values(linkedSessions).map(String);
     else if (linkedSessions) safeLinkedSessions = [String(linkedSessions)];
 
     let sessionsCheckboxes = '';
@@ -4257,7 +4263,7 @@ window.addEditCourseVideoRow = function(title = "", url = "", linkedSessions = [
         sessionsCheckboxes = `<span style="color: var(--danger-color); font-size: 12px; font-weight: bold;">لا توجد حصص مسجلة لهذا الصف!</span>`;
     } else {
         validSessions.forEach(s => {
-            let isChecked = safeLinkedSessions.includes(String(s.id)) ? "checked" : "";
+            let isChecked = safeLinkedSessions.includes(String(s.id)) ? 'checked="checked"' : "";
             sessionsCheckboxes += `
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; font-weight: bold; margin-bottom: 4px;">
                 <input type="checkbox" value="${s.id}" ${isChecked} class="vid-session-cb" style="accent-color: var(--success-color); width: 16px; height: 16px;">
@@ -4402,39 +4408,6 @@ window.switchPlatformTab = function(tabName) {
 
 
 
-
-// 4. تعديل دالة الفتح للتعديل (openEditCourseModal)
-window.openEditCourseModal = function(id) {
-    let lec = window.fetchedLectures.find(l => l.id === id);
-    if(!lec) return;
-
-    // تعبئة البيانات الأساسية للكورس (بدون التسعير القديم لأنه اتنقل جوه الفيديوهات)
-    document.getElementById("editLecId").value = lec.id;
-    document.getElementById("editLecTitle").value = lec.title;
-    document.getElementById("editLecDesc").value = lec.desc || "";
-    document.getElementById("editLecMaxViews").value = lec.maxViews || 0;
-    document.getElementById("editLecImageBase64").value = lec.image || "";
-
-    // تظبيط قائمة الصفوف الدراسية
-    let selectLevel = document.getElementById("editLecLevel");
-    document.getElementById("editLecTrack").value = lec.track || 'all';
-    let activeLevels = JSON.parse(localStorage.getItem("activeLevels")) || ["الصف الأول الثانوي", "الصف الثاني الثانوي", "الصف الثالث الثانوي"];
-    selectLevel.innerHTML = '<option value="all">كل الصفوف (عام)</option>';
-    activeLevels.forEach(lvl => { selectLevel.innerHTML += `<option value="${lvl}" ${lec.level === lvl ? 'selected' : ''}>${lvl}</option>`; });
-
-    // رسم الفيديوهات الخاصة بالكورس بكل بياناتها (بما فيها السعر والنوع لكل فيديو)
-    let vContainer = document.getElementById("editCourseVideosContainer");
-    vContainer.innerHTML = "";
-    
-    if(lec.videos && lec.videos.length > 0) {
-        lec.videos.forEach(v => addEditCourseVideoRow(v.title, v.url, v.linkedSession, v.requiredExam, v.type, v.price));
-    } else {
-        addEditCourseVideoRow();
-    }
-    
-    // فتح النافذة
-    openModal("editCourseModal");
-};
 
 
 
