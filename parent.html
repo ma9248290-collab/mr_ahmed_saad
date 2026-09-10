@@ -1224,6 +1224,10 @@ body {
                 let res = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data.json`);
                 let data = await res.json() || {};
 
+                // 🚀 استرجاع البيانات المحمية (المحفظة والكورسات) لتجنب مسحها من قبل تطبيق المدرس
+                let extRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/platformData/${code}.json`);
+                let extData = await extRes.json() || {};
+
                 let safeStudents = Array.isArray(data.students) ? data.students : Object.values(data.students || {}).filter(i => i !== null);
                 let safeGroups = Array.isArray(data.groups) ? data.groups : Object.values(data.groups || {}).filter(i => i !== null);
                 let safeClassSessions = Array.isArray(data.classSessions) ? data.classSessions : Object.values(data.classSessions || {}).filter(i => i !== null);
@@ -1252,12 +1256,20 @@ body {
                     return;
                 }
 
-                if (currentStudent.purchasedCourses) currentStudent.purchasedCourses = Array.isArray(currentStudent.purchasedCourses) ? currentStudent.purchasedCourses : Object.values(currentStudent.purchasedCourses);
-                else currentStudent.purchasedCourses = [];
+                // 🚀 دمج البيانات المحمية لضمان عدم ضياع الكورسات والرصيد
+                if (extData.walletBalance !== undefined) currentStudent.walletBalance = extData.walletBalance;
+                if (extData.behaviorPoints !== undefined) currentStudent.behaviorPoints = extData.behaviorPoints;
+                
+                if (extData.purchasedCourses) {
+                    currentStudent.purchasedCourses = Array.isArray(extData.purchasedCourses) ? extData.purchasedCourses : Object.values(extData.purchasedCourses);
+                } else if (currentStudent.purchasedCourses) {
+                    currentStudent.purchasedCourses = Array.isArray(currentStudent.purchasedCourses) ? currentStudent.purchasedCourses : Object.values(currentStudent.purchasedCourses);
+                } else {
+                    currentStudent.purchasedCourses = [];
+                }
 
                 let studentGroupObj = safeGroups.find(g => typeof g === 'object' && g.name === currentStudent.group);
-// التعديل: نحافظ على صف الطالب اللي اختاره في التسجيل لو مجموعته ملهاش صف (زي الأونلاين)
-currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroupObj.level : (currentStudent.level || "غير محدد");
+                currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroupObj.level : (currentStudent.level || "غير محدد");
 
                 if (currentStudent.level === "غير محدد") {
                     let gName = currentStudent.group || "";
@@ -1266,9 +1278,6 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                     else if (gName.includes("3ث") || gName.includes("الثالث")) currentStudent.level = "الصف الثالث الثانوي";
                 }
 
-                // ==========================================
-                // 🎨 تلوين المنصة حسب الصف
-                // ==========================================
                 applyDynamicTheme(currentStudent.level);
 
                 localStorage.setItem("ahmedsaad_student_code", code);
@@ -1278,9 +1287,6 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 allOnlineExams = data.onlineExams || [];
                 window.studentCode = code;
 
-                // ==========================================
-                // ✅ تعبئة كارت الطالب الـ VIP الداخلي
-                // ==========================================
                 document.getElementById("top-name").innerText = currentStudent.name;
                 document.getElementById("top-group").innerText = currentStudent.group;
                 
@@ -1299,7 +1305,6 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 if(document.getElementById("walletBalanceDisplay")) document.getElementById("walletBalanceDisplay").innerText = balance;
                 if(document.getElementById("wallet-page-balance")) document.getElementById("wallet-page-balance").innerHTML = `${balance} <span style="font-size: 24px; color: rgba(255,255,255,0.7);">ج.م</span>`;
 
-                // ... حسابات الخطط والحضور
                 let totalItems = 0; let completedItems = 0; let missingLectures = 0; let missingExams = 0;
                 try {
                     let subRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/onlineSubmissions.json`);
@@ -1309,11 +1314,11 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                     myExams.forEach(e => { if (allSubs[e.id] && (allSubs[e.id][currentStudent.code] || allSubs[e.id][currentStudent.phone])) completedItems++; else if (e.status === "open") missingExams++; });
 
                    let myLectures = window.allLectures.filter(l => {
-    if (!l) return false;
-    let levelMatch = l.level === "all" || l.level === currentStudent.level;
-    let trackMatch = !l.track || l.track === 'all' || l.track === (currentStudent.track || 'عام');
-    return levelMatch && trackMatch;
-});
+                        if (!l) return false;
+                        let levelMatch = l.level === "all" || l.level === currentStudent.level;
+                        let trackMatch = !l.track || l.track === 'all' || l.track === (currentStudent.track || 'عام');
+                        return levelMatch && trackMatch;
+                    });
                     totalItems += myLectures.length;
                     let trackRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/course_tracking.json`);
                     let allTracks = await trackRes.json() || {};
@@ -1357,7 +1362,6 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 showOnlineExams(true); 
                 renderStudentLectures(); 
 
-                // إخفاء الـ Landing Page و الـ Modal وفتح المنصة
                 document.getElementById("landing-page").style.display = "none";
                 document.getElementById("auth-modal").classList.remove('active');
                 document.getElementById("app-layout").style.display = "block";
@@ -1368,7 +1372,6 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 if(btn) { btn.innerHTML = "تسجيل الدخول 🚀"; btn.disabled = false; }
             }
         }
-
         // ==========================================
         // 🌟 باقي الدوال
         // ==========================================
@@ -1699,22 +1702,40 @@ currentStudent.level = (studentGroupObj && studentGroupObj.level) ? studentGroup
                 if ((currentStudent.behaviorPoints || 0) < price) return alert("النقاط لا تكفي.");
                 if (!confirm("تأكيد العملية؟")) return; currentStudent.behaviorPoints -= price;
             } else {
-                if ((currentStudent.walletBalance || 0) < price) return alert("الرصيد لا يكفي.");
+                if ((currentStudent.walletBalance || 0) < price) return alert("الرصيد لا تكفي.");
                 if (!confirm("تأكيد العملية؟")) return; currentStudent.walletBalance -= price;
             }
             try {
+                let updates = currency === 'points' ? { behaviorPoints: currentStudent.behaviorPoints } : { walletBalance: currentStudent.walletBalance };
+
+                // 🚀 الحفظ المحمي في مسار منفصل
+                await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/platformData/${currentStudent.code}.json`, { 
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(updates) 
+                });
+
                 let dataRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data.json`);
                 let data = await dataRes.json();
-                let sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
-                if (sIdx > -1) {
-                    let updates = currency === 'points' ? { behaviorPoints: currentStudent.behaviorPoints } : { walletBalance: currentStudent.walletBalance };
+                
+                let sIdx = -1;
+                if (Array.isArray(data.students)) {
+                    sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
+                } else if (data.students && typeof data.students === 'object') {
+                    let keys = Object.keys(data.students);
+                    for(let k of keys) {
+                        if(data.students[k] && data.students[k].code === currentStudent.code) {
+                            sIdx = k; break;
+                        }
+                    }
+                }
+
+                if (sIdx !== -1) {
                     await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/students/${sIdx}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
                     await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/store/logs/${"order_" + Date.now()}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: "order_" + Date.now(), date: new Date().toLocaleString('ar-EG'), studentName: currentStudent.name, studentCode: currentStudent.code, itemName: itemName, price: price, currency: currency }) });
                     alert("تم الشراء بنجاح!"); location.reload(); 
                 }
             } catch (e) { alert("حدث خطأ."); }
         };
-
         window.submitForumQuestion = async function() {
             let text = document.getElementById("forumQuestionInput").value.trim();
             if(!text) return alert("اكتب السؤال أولاً!");
@@ -2336,17 +2357,14 @@ window.openStudentCourseDetails = async function(courseId) {
 window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTitle) {
     let price = parseFloat(videoPrice) || 0;
     
-    // 1. التأكد من وجود رصيد كافي في محفظة الطالب
     if ((currentStudent.walletBalance || 0) < price) {
         alert("عفواً، رصيد المحفظة لا يكفي لشراء هذه المحاضرة. يرجى شحن الرصيد أولاً.");
         return;
     }
 
-    // 2. تأكيد عملية الشراء
     if (!confirm(`هل أنت متأكد من شراء "${videoTitle}" بمبلغ ${price} ج.م؟`)) return;
 
     try {
-        // 3. تحديث بيانات الطالب محلياً (خصم الرصيد وإضافة الكورس)
         currentStudent.walletBalance -= price;
         let specificVideoId = `${courseId}_v${videoIndex}`;
         
@@ -2355,14 +2373,35 @@ window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTit
             currentStudent.purchasedCourses.push(specificVideoId);
         }
 
-        // 4. الحفظ في قاعدة البيانات (تأكد من تعديل رابط الفايربيز للرابط الجديد الخاص بك إذا لزم الأمر)
         let firebaseBaseUrl = `https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app`; 
+        
+        // 🚀 1. الحفظ المحمي في مسار منفصل لضمان عدم مسحه من قبل المدرس
+        await fetch(`${firebaseBaseUrl}/${globalTeacherId}/platformData/${currentStudent.code}.json`, { 
+            method: 'PATCH', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ 
+                walletBalance: currentStudent.walletBalance,
+                purchasedCourses: currentStudent.purchasedCourses
+            }) 
+        });
+
+        // 2. الحفظ في قاعدة البيانات العامة (بشكل آمن لتجنب خطأ الـ Object)
         let dataRes = await fetch(`${firebaseBaseUrl}/${globalTeacherId}/data.json`);
         let data = await dataRes.json();
-        let sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
         
-        if (sIdx > -1) {
-            // رفع الرصيد الجديد والمحاضرات للفايربيز
+        let sIdx = -1;
+        if (Array.isArray(data.students)) {
+            sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
+        } else if (data.students && typeof data.students === 'object') {
+            let keys = Object.keys(data.students);
+            for(let k of keys) {
+                if(data.students[k] && data.students[k].code === currentStudent.code) {
+                    sIdx = k; break;
+                }
+            }
+        }
+        
+        if (sIdx !== -1) {
             await fetch(`${firebaseBaseUrl}/${globalTeacherId}/data/students/${sIdx}.json`, { 
                 method: 'PATCH', 
                 headers: { 'Content-Type': 'application/json' }, 
@@ -2372,7 +2411,7 @@ window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTit
                 }) 
             });
 
-            // 5. كود تعويض الغياب التلقائي
+            // كود تعويض الغياب التلقائي
             let courseObj = window.allLectures.find(l => l.id === courseId);
             if (courseObj && courseObj.videos && courseObj.videos[videoIndex]) {
                 let purchasedVideo = courseObj.videos[videoIndex];
@@ -2405,15 +2444,12 @@ window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTit
                 }
             }
 
-            // 6. رسالة النجاح وتحديث الواجهة للطالب
             alert("تم الشراء بنجاح! 🎉 يرجى الاستمتاع بالمشاهدة.");
             
-            // تحديث رقم المحفظة في الشاشة من فوق وفي صفحة المحفظة
             document.getElementById("top-balance").innerText = currentStudent.walletBalance;
             if(document.getElementById("walletBalanceDisplay")) document.getElementById("walletBalanceDisplay").innerText = currentStudent.walletBalance;
             if(document.getElementById("wallet-page-balance")) document.getElementById("wallet-page-balance").innerHTML = `${currentStudent.walletBalance} <span style="font-size: 24px; color: rgba(255,255,255,0.7);">ج.م</span>`;
             
-            // إعادة فتح نفس النافذة أوتوماتيك عشان الزرار يقلب من (شراء) لـ (تشغيل المحاضرة)
             window.openStudentCourseDetails(courseId);
         }
     } catch (e) {
@@ -2422,26 +2458,46 @@ window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTit
     }
 };
 
-        window.redeemCode = async function() {
+window.redeemCode = async function() {
             const code = document.getElementById("rechargeCodeInput").value.trim();
             if(!code) return alert("أدخل الكود!");
             try {
                 let res = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/chargeCodes/${code}.json`);
                 let codeData = await res.json();
                 if(!codeData || codeData.status === 'used') return alert("الكود غير صحيح أو مستخدم!");
+                
+                let amount = parseFloat(codeData.amount);
+                currentStudent.walletBalance = (currentStudent.walletBalance || 0) + amount;
+                
+                // 🚀 الحفظ المحمي في مسار منفصل
+                await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/platformData/${currentStudent.code}.json`, { 
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ walletBalance: currentStudent.walletBalance }) 
+                });
+
                 let dataRes = await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data.json`);
                 let data = await dataRes.json();
-                let sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
-                if(sIdx !== -1) {
-                    let amount = parseFloat(codeData.amount);
-                    currentStudent.walletBalance = (currentStudent.walletBalance || 0) + amount;
-                    await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/students/${sIdx}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ walletBalance: currentStudent.walletBalance }) });
-                    await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/chargeCodes/${code}/status.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify("used") });
-                    alert(`تم شحن ${amount} ج.م بنجاح!`); document.getElementById("rechargeCodeInput").value = ""; fetchStudentData(true);
+                
+                let sIdx = -1;
+                if (Array.isArray(data.students)) {
+                    sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
+                } else if (data.students && typeof data.students === 'object') {
+                    let keys = Object.keys(data.students);
+                    for(let k of keys) {
+                        if(data.students[k] && data.students[k].code === currentStudent.code) {
+                            sIdx = k; break;
+                        }
+                    }
                 }
+
+                if(sIdx !== -1) {
+                    await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/students/${sIdx}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ walletBalance: currentStudent.walletBalance }) });
+                }
+                
+                await fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/chargeCodes/${code}/status.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify("used") });
+                alert(`تم شحن ${amount} ج.م بنجاح!`); document.getElementById("rechargeCodeInput").value = ""; fetchStudentData(true);
             } catch (e) { alert("حدث خطأ!"); }
         }
-
         // ==========================================
 // 🔙 نظام التنقل الذكي وزر الرجوع (History API) - خاص بمنصة الطالب
 // ==========================================
