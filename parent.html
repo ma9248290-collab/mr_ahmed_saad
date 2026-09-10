@@ -2293,47 +2293,94 @@ window.openStudentCourseDetails = async function(courseId) {
 };
 
 
-// ابحث عن دالة purchaseVideo في منصة الطالب وأضف الكود التالي داخل بلوك نجاح الشراء:
-// (بعد سطر: showToast("تم شراء المحاضرة بنجاح! 🎉", "success"); )
-
-let courseObj = window.allLectures.find(l => l.id === courseId);
-if (courseObj && courseObj.videos && courseObj.videos[videoIndex]) {
-    let purchasedVideo = courseObj.videos[videoIndex];
+window.purchaseVideo = async function(courseId, videoIndex, videoPrice, videoTitle) {
+    let price = parseFloat(videoPrice) || 0;
     
-    // لو الفيديو مربوط بحصص في السنتر
-    if (purchasedVideo.linkedSessions && purchasedVideo.linkedSessions.length > 0) {
-        
-        // البحث عن حصة السنتر التي تطابق مجموعة الطالب
-        let targetSession = window.allClassSessions.find(s => 
-            purchasedVideo.linkedSessions.includes(s.id) && s.group === currentStudent.group
-        );
+    // 1. التأكد من وجود رصيد كافي في محفظة الطالب
+    if ((currentStudent.walletBalance || 0) < price) {
+        alert("عفواً، رصيد المحفظة لا يكفي لشراء هذه المحاضرة. يرجى شحن الرصيد أولاً.");
+        return;
+    }
 
-        if (targetSession) {
-            // جلب الداتا من الفايربيز مباشرة لتعديل الغياب
-            fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/classSessions.json`)
-            .then(res => res.json())
-            .then(sessionsData => {
-                let sessionsArray = Array.isArray(sessionsData) ? sessionsData : Object.values(sessionsData);
-                let sIndex = sessionsArray.findIndex(s => s && s.id === targetSession.id);
-                
-                if (sIndex > -1) {
-                    let currentAtt = sessionsArray[sIndex].attendance || {};
-                    let studentStatus = currentAtt[currentStudent.code] || currentAtt[currentStudent.phone];
-                    
-                    // لو الطالب مش متسجل أو متسجل غايب، هنقلب حالته لـ (تعويض منصة)
-                    if (!studentStatus || studentStatus === 'absent') {
-                        // تحديث الفايربيز مباشرة
-                        fetch(`https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app/${globalTeacherId}/data/classSessions/${sIndex}/attendance.json`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ [currentStudent.code]: 'platform_makeup' })
+    // 2. تأكيد عملية الشراء
+    if (!confirm(`هل أنت متأكد من شراء "${videoTitle}" بمبلغ ${price} ج.م؟`)) return;
+
+    try {
+        // 3. تحديث بيانات الطالب محلياً (خصم الرصيد وإضافة الكورس)
+        currentStudent.walletBalance -= price;
+        let specificVideoId = `${courseId}_v${videoIndex}`;
+        
+        if (!currentStudent.purchasedCourses) currentStudent.purchasedCourses = [];
+        if (!currentStudent.purchasedCourses.includes(specificVideoId)) {
+            currentStudent.purchasedCourses.push(specificVideoId);
+        }
+
+        // 4. الحفظ في قاعدة البيانات (تأكد من تعديل رابط الفايربيز للرابط الجديد الخاص بك إذا لزم الأمر)
+        let firebaseBaseUrl = `https://el-senior-system-default-rtdb.europe-west1.firebasedatabase.app`; 
+        let dataRes = await fetch(`${firebaseBaseUrl}/${globalTeacherId}/data.json`);
+        let data = await dataRes.json();
+        let sIdx = data.students.findIndex(s => s && s.code === currentStudent.code);
+        
+        if (sIdx > -1) {
+            // رفع الرصيد الجديد والمحاضرات للفايربيز
+            await fetch(`${firebaseBaseUrl}/${globalTeacherId}/data/students/${sIdx}.json`, { 
+                method: 'PATCH', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ 
+                    walletBalance: currentStudent.walletBalance,
+                    purchasedCourses: currentStudent.purchasedCourses
+                }) 
+            });
+
+            // 5. كود تعويض الغياب التلقائي
+            let courseObj = window.allLectures.find(l => l.id === courseId);
+            if (courseObj && courseObj.videos && courseObj.videos[videoIndex]) {
+                let purchasedVideo = courseObj.videos[videoIndex];
+                if (purchasedVideo.linkedSessions && purchasedVideo.linkedSessions.length > 0) {
+                    let targetSession = window.allClassSessions.find(s => 
+                        purchasedVideo.linkedSessions.includes(s.id) && s.group === currentStudent.group
+                    );
+
+                    if (targetSession) {
+                        fetch(`${firebaseBaseUrl}/${globalTeacherId}/data/classSessions.json`)
+                        .then(res => res.json())
+                        .then(sessionsData => {
+                            let sessionsArray = Array.isArray(sessionsData) ? sessionsData : Object.values(sessionsData);
+                            let sIndex = sessionsArray.findIndex(s => s && s.id === targetSession.id);
+                            
+                            if (sIndex > -1) {
+                                let currentAtt = sessionsArray[sIndex].attendance || {};
+                                let studentStatus = currentAtt[currentStudent.code] || currentAtt[currentStudent.phone];
+                                
+                                if (!studentStatus || studentStatus === 'absent') {
+                                    fetch(`${firebaseBaseUrl}/${globalTeacherId}/data/classSessions/${sIndex}/attendance.json`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ [currentStudent.code]: 'platform_makeup' })
+                                    });
+                                }
+                            }
                         });
                     }
                 }
-            });
+            }
+
+            // 6. رسالة النجاح وتحديث الواجهة للطالب
+            alert("تم الشراء بنجاح! 🎉 يرجى الاستمتاع بالمشاهدة.");
+            
+            // تحديث رقم المحفظة في الشاشة من فوق وفي صفحة المحفظة
+            document.getElementById("top-balance").innerText = currentStudent.walletBalance;
+            if(document.getElementById("walletBalanceDisplay")) document.getElementById("walletBalanceDisplay").innerText = currentStudent.walletBalance;
+            if(document.getElementById("wallet-page-balance")) document.getElementById("wallet-page-balance").innerHTML = `${currentStudent.walletBalance} <span style="font-size: 24px; color: rgba(255,255,255,0.7);">ج.م</span>`;
+            
+            // إعادة فتح نفس النافذة أوتوماتيك عشان الزرار يقلب من (شراء) لـ (تشغيل المحاضرة)
+            window.openStudentCourseDetails(courseId);
         }
+    } catch (e) {
+        console.error(e);
+        alert("حدث خطأ أثناء الاتصال بالسيرفر، يرجى المحاولة لاحقاً.");
     }
-}
+};
 
         window.redeemCode = async function() {
             const code = document.getElementById("rechargeCodeInput").value.trim();
