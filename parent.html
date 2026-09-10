@@ -465,6 +465,46 @@ body {
         opacity: 0.12;
     }
 }
+
+
+
+@media (max-width: 768px) {
+    /* تظبيط شاشة الكورس للموبايل: الفيديو فوق والقائمة تحته */
+    #anti-record-container {
+        flex-direction: column-reverse !important;
+    }
+    
+    #video-wrapper {
+        width: 100% !important;
+        height: 250px !important; /* ارتفاع مثالي للفيديو بالعرض على الفون */
+        flex: none !important;
+    }
+
+    #player-playlist {
+        width: 100% !important;
+        border-left: none !important;
+        border-top: 1px solid #1e293b !important;
+        padding: 15px !important;
+        flex: 1 !important;
+        overflow-y: auto !important;
+    }
+
+    /* تصغير هيدر المشغل على الموبايل عشان مياخدش مساحة */
+    #protected-course-screen > div:first-child {
+        padding: 10px 15px !important;
+    }
+    #player-course-title {
+        font-size: 15px !important;
+        border-right: none !important;
+        padding-right: 0 !important;
+    }
+    #custom-fs-btn {
+        bottom: 10px !important;
+        right: 10px !important;
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+    }
+}
 </style>
 </head>
 <body>
