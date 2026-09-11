@@ -4429,7 +4429,12 @@ window.renderLectures = async function() {
         keys.forEach(key => {
             let lec = lectures[key];
             window.fetchedLectures.push(lec);
-            let priceBadge = lec.type === 'paid' ? `<span style="background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">${lec.price} ج.م</span>` : `<span style="background:#d1fae5; color:#059669; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">مجاني</span>`;
+           // فحص هل الكورس يحتوي على أي فيديو مدفوع من الداخل
+            let isPaidCourse = lec.type === 'paid'; 
+            if (lec.videos && Array.isArray(lec.videos)) {
+                isPaidCourse = lec.videos.some(v => v.type === 'paid');
+            }
+            let priceBadge = isPaidCourse ? `<span style="background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">يحتوي على مدفوع</span>` : `<span style="background:#d1fae5; color:#059669; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:bold;">مجاني بالكامل</span>`;
             let targetText = lec.level === 'all' || lec.group === 'all' ? 'جميع الصفوف' : (lec.level || lec.group);
             let linkBadge = lec.linkedSession ? `<span style="display:block; margin-top:5px; font-size:11px; color:#f59e0b;">🔗 مربوط بحصة</span>` : '';
 
