@@ -1012,10 +1012,11 @@ window.openCoursePlayer = function(courseId, startVideoIndex = 0) {
     document.getElementById("player-playlist").innerHTML = playlistHtml;
 
     if(vids.length > startVideoIndex) {
-        // بنبعت العنصر الأولاني كـ Reference
-        let firstElement = document.querySelector('.playlist-item[data-index="'+startVideoIndex+'"]');
-        playCourseVideo(vids[startVideoIndex].url, vids[startVideoIndex].title, course.id, startVideoIndex, firstElement);
-    }
+    // بنبعت العنصر الأولاني كـ Reference
+    let firstElement = document.querySelector('.playlist-item[data-index="'+startVideoIndex+'"]');
+    // 🔥 التعديل هنا: تشفير الرابط قبل إرساله للتشغيل التلقائي
+    playCourseVideo(btoa(encodeURIComponent(vids[startVideoIndex].url)), vids[startVideoIndex].title, course.id, startVideoIndex, firstElement);
+}
     
     document.addEventListener('contextmenu', blockContext);
     document.addEventListener('keydown', blockKeys);
