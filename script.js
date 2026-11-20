@@ -922,7 +922,7 @@ function mergeLocalAndCloudData(cloudData, isLocalPriority = false) {
     window.isIncomingSync = false;
 }
 
-// 4️⃣ الدالة الموحدة للمزامنة والرفع الفوري
+// 4️⃣ الدالة الموحدة للمزامنة والرفع الفوري (مربوطة بسيرفر مستر أحمد سعد الصحيح)
 window.smartTwoWaySync = async function(isPushAction = false) {
     if (!navigator.onLine) {
         updateNetworkBadgeUI("offline");
@@ -934,19 +934,25 @@ window.smartTwoWaySync = async function(isPushAction = false) {
     updateNetworkBadgeUI("syncing");
 
     try {
-        const uid = typeof getSafeUid === "function" ? getSafeUid() : "Historia_System_Master";
-        const dbUrl = `https://historya-el3alamy-default-rtdb.europe-west1.firebasedatabase.app/${uid}/data.json`;
+        const uid = "AhmedSaad_System";
+        // ✅ الرابط الصحيح لسيرفر مستر أحمد سعد (نفس رابط منصة الطالب)
+        const dbUrl = `https://saad-62e70-default-rtdb.europe-west1.firebasedatabase.app/${uid}/data.json`;
 
-        const hadLocalEdits = window.hasPendingOfflineChanges || isPushAction;
-
+        // التحقق مما إذا كان الجهاز المحلي يحتوي على حصص أحدث من السحابة لحمايتها ورفعها فوراً
         const res = await fetch(dbUrl);
         if (!res.ok) throw new Error("Firebase fetch error");
         const cloudData = (await res.json()) || {};
 
-        // دمج البيانات مع احترام المحذوفات
+        const cloudSessionsCount = Array.isArray(cloudData.classSessions) 
+            ? cloudData.classSessions.length 
+            : Object.keys(cloudData.classSessions || {}).length;
+        const localHasNewerData = (classSessions && classSessions.length > cloudSessionsCount) || (students && students.length > (cloudData.students || []).length);
+
+        const hadLocalEdits = window.hasPendingOfflineChanges || isPushAction || localHasNewerData;
+
+        // دمج البيانات مع الحفاظ على الحصص المحلية الأحدث
         mergeLocalAndCloudData(cloudData, hadLocalEdits);
 
-        // إذا كان هناك تعديل أو حذف محلي، نرفع النسخة النظيفة فوراً إلى السحابة
         if (hadLocalEdits) {
             const payload = {
                 students: students || [],
@@ -970,7 +976,6 @@ window.smartTwoWaySync = async function(isPushAction = false) {
 
             if (!pushRes.ok) throw new Error("Firebase push error");
 
-            // بعد نجاح الرفع للفايربيز، نصفر سجل المحذوفات المؤقت
             window.deletedItemsRegistry = { students:[], groups:[], sessions:[], exams:[], homeworks:[], expenses:[], books:[], schedule:[] };
             originalSetItem.call(localStorage, "deletedItemsRegistry", JSON.stringify(window.deletedItemsRegistry));
             window.hasPendingOfflineChanges = false;
@@ -978,7 +983,7 @@ window.smartTwoWaySync = async function(isPushAction = false) {
         }
 
         updateNetworkBadgeUI("online");
-        refreshVisibleViewsAfterSync();
+        if (typeof refreshVisibleViewsAfterSync === "function") refreshVisibleViewsAfterSync();
 
     } catch (err) {
         console.error("Sync Error Details:", err);
@@ -3772,8 +3777,8 @@ window.manageClearAction = async function(type) {
         return;
     }
 
-    const uid = typeof getSafeUid === "function" ? getSafeUid() : "Historia_System_Master";
-    const dbUrl = `https://historya-el3alamy-default-rtdb.europe-west1.firebasedatabase.app/${uid}/data.json`;
+    const uid = "AhmedSaad_System";
+    const dbUrl = `https://saad-62e70-default-rtdb.europe-west1.firebasedatabase.app/${uid}/data.json`;
 
     window.isIncomingSync = true; // إيقاف المراقب التلقائي مؤقتاً لنرفع الحذف المباشر
 
